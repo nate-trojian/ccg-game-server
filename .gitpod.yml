@@ -5,8 +5,8 @@ ports:
   - port: 8080
 #    onOpen: open-preview
 
-checkoutLocation: "$GOROOT/src/github.com/nate-trojian/ccg-game-server"
-workspaceLocation: "$GOROOT/src/github.com/nate-trojian/ccg-game-server"
+checkoutLocation: "go/src/github.com/nate-trojian/ccg-game-server"
+workspaceLocation: "go/src/github.com/nate-trojian/ccg-game-server"
 
 tasks:
   - init: >
