@@ -5,8 +5,7 @@ FROM gitpod/workspace-full
 ### Go ###
 ENV GO_VERSION=1.15.6 \
     GOPATH=$HOME/go-packages \
-    GOROOT=$HOME/go \
-    GO111MODULE=on
+    GOROOT=$HOME/go
 ENV PATH=$GOROOT/bin:$GOPATH/bin:$PATH
 RUN curl -fsSL https://storage.googleapis.com/golang/go$GO_VERSION.linux-amd64.tar.gz | tar -xzv \
     && go get -u -v \
