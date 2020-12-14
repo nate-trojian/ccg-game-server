@@ -19,7 +19,7 @@ const (
 	pingPeriod = (pongWait * 9) / 10
 
 	// Maximum message size allowed from peer.
-	maxMessageSize int64 = 512
+	maxMessageSize = 512
 
 	// Send channel buffer
 	sendChannelBuffer = 0  // TODO - Will need to test to figure out where this should be at
@@ -30,12 +30,15 @@ var (
 	space   = []byte{' '}
 )
 
+// Client - Websocket Client
+// Handles all readig and writing operations
 type Client struct {
 	logger *zap.Logger
 	conn *websocket.Conn
 	send chan []byte
 }
 
+// NewClient - Creates a new Client from a websocket connection
 func NewClient(reqAddr string, conn *websocket.Conn) *Client {
 	return &Client{
 		logger: NewLogger("client").With(zap.String("ip", reqAddr)),

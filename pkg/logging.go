@@ -9,6 +9,7 @@ import (
 
 var _logger *zap.Logger = nil
 
+// InitializeLogger - Initialize the base logger
 func InitializeLogger(level string) error {
 	var lvl zapcore.Level
 	err := lvl.Set(level)
@@ -31,6 +32,7 @@ func InitializeLogger(level string) error {
 	return nil
 }
 
+// NewLogger - Create a new logger from the base logger
 func NewLogger(name string) *zap.Logger {
 	return _logger.With(zap.String("n", name))
 }
