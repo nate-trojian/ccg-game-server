@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/nate-trojian/ccg-game-server/internal"
 	"go.uber.org/zap"
 )
 
@@ -41,7 +42,7 @@ type Client struct {
 // NewClient - Creates a new Client from a websocket connection
 func NewClient(reqAddr string, conn *websocket.Conn) *Client {
 	return &Client{
-		logger: NewLogger("client").With(zap.String("ip", reqAddr)),
+		logger: internal.NewLogger("client").With(zap.String("ip", reqAddr)),
 		conn: conn,
 		send: make(chan []byte, sendChannelBuffer),
 	}

@@ -9,7 +9,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/nate-trojian/ccg-game-server/matchmaking"
+	"github.com/nate-trojian/ccg-game-server/internal"
+	"github.com/nate-trojian/ccg-game-server/pkg/matchmaking"
 	"go.uber.org/zap"
 )
 
@@ -23,7 +24,7 @@ type Server struct {
 // NewServer - Create a new Server
 func NewServer() *Server {
 	server := &Server{
-		logger: NewLogger("server"),
+		logger: internal.NewLogger("server"),
 		upgrader: &websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,

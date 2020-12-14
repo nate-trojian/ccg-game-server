@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/nate-trojian/ccg-game-server/pkg"
+	"github.com/nate-trojian/ccg-game-server/internal"
 	"go.uber.org/zap"
 )
 
@@ -26,7 +26,7 @@ type Matchmaker struct {
 // InitializeMatchmaker - Creates a new Matchmaker
 func InitializeMatchmaker() *Matchmaker {
 	return &Matchmaker{
-		logger: pkg.NewLogger("matchmaker"),
+		logger: internal.NewLogger("matchmaker"),
 		queue: map[string][]string{
 			"standard": {},
 		},

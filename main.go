@@ -5,13 +5,14 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/nate-trojian/ccg-game-server/internal"
 	"github.com/nate-trojian/ccg-game-server/pkg"
 	"go.uber.org/zap"
 )
 
 func main() {
-	_ = pkg.InitializeLogger("debug")
-	logger := pkg.NewLogger("main")
+	_ = internal.InitializeLogger("debug")
+	logger := internal.NewLogger("main")
 
 	stop := make(chan os.Signal)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
