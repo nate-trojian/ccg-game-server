@@ -23,7 +23,7 @@ const (
 	maxMessageSize = 512
 
 	// Send channel buffer
-	sendChannelBuffer = 0  // TODO - Will need to test to figure out where this should be at
+	sendChannelBuffer = 0  // Will need to test to figure out where this should be at
 )
 
 var (
@@ -32,11 +32,11 @@ var (
 )
 
 // Client - Websocket Client
-// Handles all readig and writing operations
+// Handles all reading and writing operations
 type Client struct {
 	logger *zap.Logger
 	conn *websocket.Conn
-	send chan []byte
+	Send chan []byte
 }
 
 // NewClient - Creates a new Client from a websocket connection
@@ -44,12 +44,13 @@ func NewClient(reqAddr string, conn *websocket.Conn) *Client {
 	return &Client{
 		logger: internal.NewLogger("client").With(zap.String("ip", reqAddr)),
 		conn: conn,
-		send: make(chan []byte, sendChannelBuffer),
+		Send: make(chan []byte, sendChannelBuffer),
 	}
 }
 
-func (c *Client) read() {
+func (c *Client) read(msg chan []byte, close chan *Client) {
 	defer func() {
+		close <- c
 		c.conn.Close()
 	}()
 
@@ -66,7 +67,8 @@ func (c *Client) read() {
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 
-		// TODO - Pass message to hub so it gets passed to the right game
+		// Pass message to hub so it gets passed to the right game
+		msg <- message
 	}
 }
 
@@ -78,7 +80,7 @@ func (c *Client) write() {
 	}()
 	for {
 		select {
-		case message, ok := <-c.send:
+		case message, ok := <-c.Send:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.

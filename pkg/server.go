@@ -19,21 +19,24 @@ type Server struct {
 	logger *zap.Logger
 	upgrader *websocket.Upgrader
 	server *http.Server
+	registerClient chan *Client
 }
 
 // NewServer - Create a new Server
-func NewServer() *Server {
+func NewServer(rc chan *Client) *Server {
 	server := &Server{
 		logger: internal.NewLogger("server"),
 		upgrader: &websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 		},
+		registerClient: rc,
 	}
 
 	// TODO - This should take a config object
 	mux := http.NewServeMux()
-	mux.HandleFunc("/register", server.register)
+	mux.HandleFunc("/login", server.login)
+	mux.HandleFunc("/match", server.requestMatch)
 	mux.HandleFunc("/ws", server.ws)
 	s := &http.Server{
 		Addr: ":8080",
@@ -62,7 +65,11 @@ func (s *Server) Shutdown() error {
 	return s.server.Shutdown(ctx)
 }
 
-func (s *Server) register(w http.ResponseWriter, r *http.Request) {
+func (s *Server) login(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) requestMatch(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		s.writeError(w, http.StatusText(http.StatusMethodNotAllowed), errors.New("bad method"), http.StatusMethodNotAllowed)
 		return
@@ -103,7 +110,5 @@ func (s *Server) ws(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := NewClient(r.RemoteAddr, conn)
-	go client.read()
-	go client.write()
+	s.registerClient <- NewClient(r.RemoteAddr, conn)
 }

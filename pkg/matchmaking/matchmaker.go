@@ -12,25 +12,25 @@ import (
 
 const (
 	makerCheckPeriod = 2000
-	matchBuffer = 10
+	matchBuffer      = 10
 )
 
 // Matchmaker - Assigns players to new matches
 type Matchmaker struct {
 	logger *zap.Logger
-	queue map[string][]string
-	in chan Request
-	out chan Match
+	queue  map[string][]Request
+	in     chan Request
+	out    chan Match
 }
 
 // InitializeMatchmaker - Creates a new Matchmaker
 func InitializeMatchmaker() *Matchmaker {
 	return &Matchmaker{
 		logger: internal.NewLogger("matchmaker"),
-		queue: map[string][]string{
+		queue: map[string][]Request{
 			"standard": {},
 		},
-		in: make(chan Request),
+		in:  make(chan Request),
 		out: make(chan Match, matchBuffer),
 	}
 }
@@ -57,7 +57,7 @@ func (m *Matchmaker) Start(ctx context.Context) {
 		select {
 		case req := <-m.in:
 			q := m.queue[req.Mode]
-			m.queue[req.Mode] = append(q, req.Player)
+			m.queue[req.Mode] = append(q, req)
 		case <-t.C:
 			rand.Seed(time.Now().UnixNano())
 			for k := range m.queue {
@@ -71,10 +71,12 @@ func (m *Matchmaker) Start(ctx context.Context) {
 					p2 := q[1]
 					q = q[2:]
 					match := Match{
-						Player1: p1,
-						Player2: p2,
-						Mode: k,
-						ID: uuid.New().String(),
+						Player1:     p1.PlayerID,
+						Player1Deck: p1.DeckID,
+						Player2:     p2.PlayerID,
+						Player2Deck: p2.DeckID,
+						Mode:        k,
+						ID:          uuid.New().String(),
 					}
 					m.logger.Debug("Created new match", zap.Any("match", match))
 					m.out <- match
