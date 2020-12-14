@@ -9,16 +9,18 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/nate-trojian/ccg-game-server/matchmaking"
 	"go.uber.org/zap"
 )
 
+// Server - Game Server instance
 type Server struct {
 	logger *zap.Logger
 	upgrader *websocket.Upgrader
 	server *http.Server
 }
 
-// NewServer Create a new server
+// NewServer - Create a new Server
 func NewServer() *Server {
 	server := &Server{
 		logger: NewLogger("server"),
@@ -42,6 +44,7 @@ func NewServer() *Server {
 	return server
 }
 
+// Start - Start the Game Server
 func (s *Server) Start() error {
 	if err := s.server.ListenAndServe(); err != nil {
 		if errors.Is(err, http.ErrServerClosed) {
@@ -51,6 +54,7 @@ func (s *Server) Start() error {
 	return nil
 }
 
+// Shutdown - Shutdown the Game Server
 func (s *Server) Shutdown() error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 5)
 	defer cancel()
@@ -69,7 +73,7 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var request MatchmakingRequest
+	var request matchmaking.Request
 	err = json.Unmarshal(body, &request)
 	if err != nil {
 		s.writeError(w, "Bad Matchmaking Request", err, http.StatusBadRequest)
@@ -98,7 +102,6 @@ func (s *Server) ws(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO - Pass Client to 
 	client := NewClient(r.RemoteAddr, conn)
 	go client.read()
 	go client.write()
