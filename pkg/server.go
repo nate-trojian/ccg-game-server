@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/nate-trojian/ccg-game-server/internal"
 	"github.com/nate-trojian/ccg-game-server/pkg/matchmaking"
@@ -24,6 +25,7 @@ type Server struct {
 
 // NewServer - Create a new Server
 func NewServer(rc chan *Client) *Server {
+	// TODO - This should take a config object
 	server := &Server{
 		logger: internal.NewLogger("server"),
 		upgrader: &websocket.Upgrader{
@@ -33,14 +35,19 @@ func NewServer(rc chan *Client) *Server {
 		registerClient: rc,
 	}
 
-	// TODO - This should take a config object
-	mux := http.NewServeMux()
-	mux.HandleFunc("/login", server.login)
-	mux.HandleFunc("/match", server.requestMatch)
-	mux.HandleFunc("/ws", server.ws)
+	r := mux.NewRouter()
+	// Auth Service
+	// TODO - Add
+	// User Service
+	// TODO - Add
+	// Matchmaking Service
+	r.HandleFunc("/match", server.requestMatch).Methods(http.MethodPost)
+	// Game Service
+	r.HandleFunc("/{gameId}/join", server.join).Methods(http.MethodGet).Queries("player_id", "")
+	r.HandleFunc("/{gameId}/ws", server.ws).Methods(http.MethodGet)
 	s := &http.Server{
 		Addr: ":8080",
-		Handler: mux,
+		Handler: r,
 	}
 
 	server.server = s
@@ -65,8 +72,15 @@ func (s *Server) Shutdown() error {
 	return s.server.Shutdown(ctx)
 }
 
-func (s *Server) login(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
+func (s *Server) writeError(w http.ResponseWriter, msg string, err error, header int) {
+	s.logger.Error(msg, zap.Error(err))
+	w.WriteHeader(header)
+	resp := ErrorResponse{
+		Error: err.Error(),
+		Message: msg,
+	}
+	body, _ := json.Marshal(&resp)
+	_, _  = w.Write(body)
 }
 
 func (s *Server) requestMatch(w http.ResponseWriter, r *http.Request) {
@@ -88,20 +102,14 @@ func (s *Server) requestMatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO - Add to matckmaking
+	// TODO - Add to matchmaking
 
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *Server) writeError(w http.ResponseWriter, msg string, err error, header int) {
-	s.logger.Error(msg, zap.Error(err))
-	w.WriteHeader(header)
-	resp := ErrorResponse{
-		Error: err.Error(),
-		Message: msg,
-	}
-	body, _ := json.Marshal(&resp)
-	_, _  = w.Write(body)
+func (s *Server) join(w http.ResponseWriter, r *http.Request) {
+	// TODO - Validate user joining
+	http.Redirect(w, r, "/ws", http.StatusTemporaryRedirect)
 }
 
 func (s *Server) ws(w http.ResponseWriter, r *http.Request) {
