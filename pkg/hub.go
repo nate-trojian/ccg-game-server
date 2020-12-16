@@ -41,8 +41,13 @@ func (h *Hub) RegisterClientsChan() chan *Client {
 
 // Start - Start the Hub process
 func (h *Hub) Start(ctx context.Context) {
+	defer h.logger.Sync()
+	loop:
 	for {
 		select {
+		case <-ctx.Done():
+			h.logger.Info("Closing Hub")
+			break loop
 		case c := <-h.register:
 			h.connected[c] = true
 			go c.read(h.messages, h.unregister)
@@ -51,6 +56,10 @@ func (h *Hub) Start(ctx context.Context) {
 			close(c.Send)
 		case m := <-h.newMatches:
 			h.logger.Info("Creating new match", zap.Any("match", m))
+		default:
 		}
 	}
+	close(h.register)
+	close(h.unregister)
+	close(h.messages)
 }

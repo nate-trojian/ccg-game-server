@@ -53,6 +53,7 @@ func (m *Matchmaker) Start(ctx context.Context) {
 		close(m.in)
 		close(m.out)
 	}()
+	m.logger.Info("Starting Matchmaker")
 	for {
 		select {
 		case req := <-m.in:
