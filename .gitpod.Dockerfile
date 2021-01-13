@@ -1,4 +1,4 @@
-FROM buildpack-deps:cosmic
+FROM buildpack-deps:stable-curl
 
 ### base ###
 RUN yes | unminimize \
