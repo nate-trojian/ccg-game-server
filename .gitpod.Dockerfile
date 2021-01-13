@@ -1,8 +1,7 @@
 FROM buildpack-deps:stable-curl
 
 ### base ###
-RUN yes | unminimize \
-    && apt-get install -yq \
+RUN apt-get install -yq \
         asciidoctor \
         bash-completion \
         build-essential \
