@@ -1,15 +1,19 @@
 package game
 
+type effectI interface {
+	resolve()
+}
+
 // Effect - Something that directly happens to the game state
 type Effect struct {
-	// Base parameters
-	ID string
-	game *Game
-	parent *Effect
-	subQueue []Effect
-	Details map[string]interface{} `json:",omitempty"`
+	effectI
 
-	resolve func()
+	// Base parameters
+	Type string
+	game *Game
+	Details map[string]interface{} `json:",omitempty"`
+	IsDepthFirst bool
+
 	sanitize func() Effect
 
 	// Targetted Effects
@@ -26,3 +30,6 @@ func (e Effect) SantizedCopy() Effect {
 	}
 	return e
 }
+
+// EffectStack - Directed 
+type EffectStack map[*Effect][]Effect
