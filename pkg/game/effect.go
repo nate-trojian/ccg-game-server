@@ -20,9 +20,9 @@ type Effect struct {
 }
 
 // SantizedCopy returns a copy of the Effect without information for the opposing player or the action itself if it doesn't need to be sanitized
-func (a Effect) SantizedCopy() Effect {
-	if a.sanitize != nil {
-		return a.sanitize()
+func (e Effect) SantizedCopy() Effect {
+	if e.sanitize != nil {
+		return e.sanitize()
 	}
-	return a
+	return e
 }

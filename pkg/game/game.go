@@ -110,5 +110,5 @@ func (g *Game) mulligan() {
 func (g *Game) loop() {
 }
 
-func (g *Game) processAction(a Effect) {
+func (g *Game) processAction(a Action) {
 }
