@@ -21,7 +21,7 @@ type Game struct {
 	Player2 *Player
 	startTime int64
 	Turn int
-	MoveChan chan Move
+	ActionChan chan Action
 	Player1OutChan chan []byte
 	Player2OutChan chan []byte
 	Template BoardTemplate
@@ -41,7 +41,7 @@ func NewGame(template BoardTemplate, p1 PlayerRef, p1Deck Deck, p1Chan chan []by
 			Deck: p2Deck,
 		},
 		Template: template,
-		MoveChan: make(chan Move, 10),
+		ActionChan: make(chan Action, 10),
 		Player1OutChan: p1Chan,
 		Player2OutChan: p2Chan,
 	}
@@ -110,5 +110,5 @@ func (g *Game) mulligan() {
 func (g *Game) loop() {
 }
 
-func (g *Game) processAction(a Action) {
+func (g *Game) processAction(a Effect) {
 }

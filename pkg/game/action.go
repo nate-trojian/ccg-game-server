@@ -1,31 +1,26 @@
 package game
 
-// Action - Something that directly happens to the game state
+const (
+	// Mulligan - Replace cards in starting hand
+	Mulligan = "MULLIGAN"
+	// EndTurn - Player Ends turn
+	EndTurn = "END_TURN"
+	// Surrender - Player Surrenders
+	Surrender = "SURRENDER"
+	// Replace - Player replaces a card in hand
+	Replace = "REPLACE"
+	// Play - Play a card from hand
+	Play = "PLAY"
+	// Move - Move Entity on board
+	Move = "MOVE"
+	// Attack - Entity attacks another Entity on board
+	Attack = "ATTACK"
+)
+
+// Action - How the player interacts with the game
 type Action struct {
-	// Base parameters
-	ID string
-	game *Game
-	parent *Action
-	subQueue []Action
-	Details map[string]interface{} `json:",omitempty"`
-
-	resolve func()
-	sanitize func() Action
-
-	// Targetted Actions
-	Source *Entity `json:",omitempty"`
-	SourcePos *int `json:",omitempty"`
-	Target *Entity `json:",omitempty"`
-	TargetPos *int `json:",omitempty"`
+	Type string
+	Who string
+	When int64  // Epoch time of the event
+	Details map[string]interface{}
 }
-
-// SantizedCopy returns a copy of the Action without information for the opposing player or the action itself if it doesn't need to be sanitized
-func (a Action) SantizedCopy() Action {
-	if a.sanitize != nil {
-		return a.sanitize()
-	}
-	return a
-}
-
-// ActionDatabase - Storage for actions
-type ActionDatabase map[string]Action
