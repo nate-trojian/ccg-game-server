@@ -19,8 +19,8 @@ const (
 
 // Action - How the player interacts with the game
 type Action struct {
-	Type string
-	Who string
+	Type string // One of the constant values above, maybe make this a custom type?
+	Who string // Player ID - Make this a PlayerRef?
 	When int64  // Epoch time of the event
 	Details map[string]interface{}  // Is it more or less flexible to have the Details map?
 }

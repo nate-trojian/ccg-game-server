@@ -9,7 +9,7 @@ type PlayerRef struct {
 // Player - 
 type Player struct {
 	PlayerRef
-	Deck Deck
+	Deck *Deck
 	Mana int
 	Health int
 }

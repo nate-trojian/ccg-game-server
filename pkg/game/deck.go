@@ -5,42 +5,36 @@ import (
 	"time"
 )
 
-// Card -
-type Card struct {
+// Skill - JSON representation of what a card does
+type Skill struct {
+	EffectName string
+	Details map[string]interface{}
+}
+
+// CardInfo - Base Information about a card
+type CardInfo struct {
 	ID string
 	Faction int
-	OwnedBy PlayerRef
+	CardType int
 	ImageID string
+
 	Name string
-	ManaCost int
+	Mana int
 	Text string
+	OnPlay []Skill
+	OnReplace []Skill
 }
 
-type entityI interface {
-	IsGeneral() bool
-}
-
-// Entity - Game component that occupies a Tile
-type Entity struct {
-	Card
-	entityI
-	BaseAttack int
-	BaseHealth int
-	Attack int
-	Health int
-	IsGeneral bool
-	IsExhausted bool
-}
-
-// Spell - Game component that triggers an Effect
-type Spell struct {
-	Card
+// Card - A playable card in the Game
+type Card struct {
+	CardInfo
+	OwnedBy PlayerRef
 }
 
 // Deck -
 type Deck struct {
 	ID string
-	Cards []Card
+	Cards []*Card
 	General Entity
 }
 
@@ -51,17 +45,17 @@ func (d *Deck) Shuffle() {
 }
 
 // Draw Top Card from Deck
-func (d *Deck) Draw() Card {
+func (d *Deck) Draw() *Card {
 	top := d.Cards[0]
 	d.Cards = d.Cards[1:]
 	return top
 }
 
 // Replace Card with another Card of a different ID
-func (d *Deck) Replace(c Card) Card {
+func (d *Deck) Replace(c *Card) *Card {
 	var (
 		j int
-		cr Card
+		cr *Card
 	)
 
 	// If deck is empty, return c

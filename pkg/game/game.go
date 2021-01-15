@@ -4,19 +4,21 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/nate-trojian/ccg-game-server/pkg/matchmaking"
 )
 
-// TODO - Make these parameters to pass in
-const (
-	mulliganHandSize = 4
-	mulliganCount = 4
-	handSize = 10
-	maxMana = 10
-)
+// Rules - Game rules
+type Rules struct {
+	MulliganHandSize int
+	MulligansAllowed int
+	PlayerHandSize int
+	MaximumMana int
+}
 
-// Game - It's the game
+// Game - It's the Game
 type Game struct {
 	ID string
+	Rules Rules
 	Player1 *Player
 	Player2 *Player
 	startTime int64
@@ -30,7 +32,7 @@ type Game struct {
 }
 
 // NewGame creates a new Game
-func NewGame(template BoardTemplate, p1 PlayerRef, p1Deck Deck, p1Chan chan []byte, p2 PlayerRef, p2Deck Deck, p2Chan chan []byte) *Game {
+func NewGame(match matchmaking.Match) *Game {
 	return &Game{
 		ID: uuid.New().String(),
 		Player1: &Player{
@@ -46,6 +48,10 @@ func NewGame(template BoardTemplate, p1 PlayerRef, p1Deck Deck, p1Chan chan []by
 		Player1OutChan: p1Chan,
 		Player2OutChan: p2Chan,
 	}
+}
+
+func getTemplateFromType() BoardTemplate {
+
 }
 
 // GetPlayer - Get player by number
@@ -104,7 +110,7 @@ func (g *Game) initializeBoard() {
 }
 
 func (g *Game) mulligan() {
-	for i := 0; i < mulliganHandSize; i++ {
+	for i := 0; i < g.Rules.MulliganHandSize; i++ {
 	}
 }
 
