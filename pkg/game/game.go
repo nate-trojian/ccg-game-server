@@ -26,6 +26,7 @@ type Game struct {
 	Player2OutChan chan []byte
 	Template BoardTemplate
 	Board *Board
+	Hooks []Hook
 }
 
 // NewGame creates a new Game
@@ -111,4 +112,5 @@ func (g *Game) loop() {
 }
 
 func (g *Game) processAction(a Action) {
+	
 }

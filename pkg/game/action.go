@@ -22,5 +22,5 @@ type Action struct {
 	Type string
 	Who string
 	When int64  // Epoch time of the event
-	Details map[string]interface{}
+	Details map[string]interface{}  // Is it more or less flexible to have the Details map?
 }
