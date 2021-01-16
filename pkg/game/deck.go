@@ -1,6 +1,9 @@
 package game
 
 import (
+	"bytes"
+	"encoding/base64"
+	"encoding/json"
 	"math/rand"
 	"time"
 )
@@ -28,14 +31,35 @@ type CardInfo struct {
 // Card - A playable card in the Game
 type Card struct {
 	CardInfo
-	OwnedBy PlayerRef
+	OwnedBy string
 }
 
-// Deck -
+// Loadout - Deck Loadout
+type Loadout struct {
+	General string
+}
+
+// DeckInfo - Information to create in-game Deck
+type DeckInfo struct {
+	Name string
+	CardIds []string
+	Loadout Loadout
+}
+
+// Base64 - Base64 encoded string of the deck
+func (di DeckInfo) Base64() string {
+	var buf bytes.Buffer
+	encoder := base64.NewEncoder(base64.StdEncoding, &buf)
+	// Ignore the potential error
+    _ = json.NewEncoder(encoder).Encode(di)
+    encoder.Close()
+    return buf.String()
+}
+
+// Deck - Deck of Cards for 
 type Deck struct {
-	ID string
+	DeckInfo
 	Cards []*Card
-	General Entity
 }
 
 // Shuffle Deck

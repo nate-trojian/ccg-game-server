@@ -1,15 +1,16 @@
 package game
 
-// PlayerRef -
-type PlayerRef struct {
+// PlayerInfo - Player Information 
+type PlayerInfo struct {
 	ID string
 	Username string
 }
 
-// Player - 
+// Player - Game Player
 type Player struct {
-	PlayerRef
+	Info PlayerInfo
 	Deck *Deck
+	General *Entity
 	Mana int
 	Health int
 }

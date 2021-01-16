@@ -1,10 +1,13 @@
 package game
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/nate-trojian/ccg-game-server/internal"
 	"github.com/nate-trojian/ccg-game-server/pkg/matchmaking"
+	"go.uber.org/zap"
 )
 
 // Rules - Game rules
@@ -13,11 +16,13 @@ type Rules struct {
 	MulligansAllowed int
 	PlayerHandSize int
 	MaximumMana int
+	BoardTemplate BoardTemplate
 }
 
 // Game - It's the Game
 type Game struct {
 	ID string
+	logger *zap.Logger
 	Rules Rules
 	Player1 *Player
 	Player2 *Player
@@ -26,35 +31,55 @@ type Game struct {
 	ActionChan chan Action
 	Player1OutChan chan []byte
 	Player2OutChan chan []byte
-	Template BoardTemplate
 	Board *Board
 	Hooks []Hook
 }
 
 // NewGame creates a new Game
-func NewGame(match matchmaking.Match) *Game {
+func NewGame(db Database, match matchmaking.Match, p1Chan, p2Chan chan []byte) (*Game, error) {
+	id := uuid.New().String()
+	logger := internal.NewLogger(id)
+
+	p1Info, err := db.PlayerInfoFromId(match.Player1)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get player 1 info - %w", err)
+	}
+
+	
+
 	return &Game{
-		ID: uuid.New().String(),
+		ID: id,
+		logger: logger,
 		Player1: &Player{
-			PlayerRef: p1,
-			Deck: p1Deck,
+			Info: p1Info,
+			Deck: createDeckFromInfo(db.DeckFromIds(match.Player1, match.Player1Deck)),
 		},
 		Player2: &Player{
-			PlayerRef: p2,
+			Info: db.PlayerInfoFromId(match.Player2),
 			Deck: p2Deck,
 		},
-		Template: template,
+		Rules: getRulesFromMode(match.Mode),
 		ActionChan: make(chan Action, 10),
 		Player1OutChan: p1Chan,
 		Player2OutChan: p2Chan,
+	}, nil
+}
+
+func getRulesFromMode(mode string) Rules {
+	return Rules{
+		MulliganHandSize: 4,
+		MulligansAllowed: 4,
+		PlayerHandSize: 10,
+		MaximumMana: 10,
+		BoardTemplate: BoardTemplate{},
 	}
 }
 
-func getTemplateFromType() BoardTemplate {
+func createDeckFromInfo(info DeckInfo) *Deck {
 
 }
 
-// GetPlayer - Get player by number
+// GetPlayer - Get player by index
 func (g *Game) GetPlayer(n int) *Player {
 	switch n {
 	case 1: return g.Player1
@@ -63,11 +88,11 @@ func (g *Game) GetPlayer(n int) *Player {
 	}
 }
 
-// GetPlayerFromRef - Get player by ref
-func (g *Game) GetPlayerFromRef(ref PlayerRef) *Player {
-	switch ref.ID {
-	case g.Player1.ID: return g.Player1
-	case g.Player2.ID: return g.Player2
+// GetPlayerFromID - Get player with id
+func (g *Game) GetPlayerFromID(id string) *Player {
+	switch id {
+	case g.Player1.Info.ID: return g.Player1
+	case g.Player2.Info.ID: return g.Player2
 	default: return nil
 	}
 }
@@ -103,7 +128,7 @@ func (g *Game) initializeBoard() {
 	}
 
 	for p, pos := range(g.Template.Generals) {
-		b.tiles[pos].Entity = &(g.GetPlayer(p).Deck.General)
+		b.tiles[pos].Entity = g.GetPlayer(p).General
 	}
 
 	g.Board = b
