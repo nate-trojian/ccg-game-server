@@ -35,6 +35,7 @@ type Card struct {
 }
 
 // Loadout - Deck Loadout
+// I'm not sure if this is where this should go, but it works here for now
 type Loadout struct {
 	General string
 }
@@ -54,6 +55,18 @@ func (di DeckInfo) Base64() string {
     _ = json.NewEncoder(encoder).Encode(di)
     encoder.Close()
     return buf.String()
+}
+
+// DecodeBase64 - Decode base64 encoded DeckInfo
+func DecodeBase64(b64 string) (*DeckInfo, error) {
+	buf := bytes.NewBufferString(b64)
+	decoder := base64.NewDecoder(base64.StdEncoding, buf)
+	var info DeckInfo
+	err := json.NewDecoder(decoder).Decode(&info)
+	if err != nil {
+		return nil, err
+	}
+	return &info, nil
 }
 
 // Deck - Deck of Cards for 

@@ -45,18 +45,31 @@ func NewGame(db Database, match matchmaking.Match, p1Chan, p2Chan chan []byte) (
 		return nil, fmt.Errorf("failed to get player 1 info - %w", err)
 	}
 
-	
+	p1DeckInfo, err := DecodeBase64(match.Player1Deck)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode player 1 deck - %w", err)
+	}
+
+	p2Info, err := db.PlayerInfoFromId(match.Player2)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get player 2 info - %w", err)
+	}
+
+	p2DeckInfo, err := DecodeBase64(match.Player2Deck)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode player 2 deck - %w", err)
+	}
 
 	return &Game{
 		ID: id,
 		logger: logger,
 		Player1: &Player{
 			Info: p1Info,
-			Deck: createDeckFromInfo(db.DeckFromIds(match.Player1, match.Player1Deck)),
+			Deck: createDeckFromInfo(p1DeckInfo),
 		},
 		Player2: &Player{
-			Info: db.PlayerInfoFromId(match.Player2),
-			Deck: p2Deck,
+			Info: p2Info,
+			Deck: createDeckFromInfo(p2DeckInfo),
 		},
 		Rules: getRulesFromMode(match.Mode),
 		ActionChan: make(chan Action, 10),
@@ -75,8 +88,8 @@ func getRulesFromMode(mode string) Rules {
 	}
 }
 
-func createDeckFromInfo(info DeckInfo) *Deck {
-
+func createDeckFromInfo(info *DeckInfo) *Deck {
+	return nil
 }
 
 // GetPlayer - Get player by index
@@ -112,22 +125,22 @@ func (g *Game) initializeBoard() {
 	)
 
 	b := &Board{
-		width: g.Template.Width,
-		height: g.Template.Height,
-		tiles: make([]Tile, g.Template.Width * g.Template.Height),
+		width: g.Rules.BoardTemplate.Width,
+		height: g.Rules.BoardTemplate.Height,
+		tiles: make([]Tile, g.Rules.BoardTemplate.Width * g.Rules.BoardTemplate.Height),
 	}
 
 	for i := 0; i < b.height; i++ {
 		for j := 0; j < b.width; j++ {
 			ind = j + i * b.width
 			b.tiles[ind] = Tile{
-				Entity: g.Template.Entities[ind],
-				TileEffect: g.Template.TileEffects[ind],
+				Entity: g.Rules.BoardTemplate.Entities[ind],
+				TileEffect: g.Rules.BoardTemplate.TileEffects[ind],
 			}
 		}
 	}
 
-	for p, pos := range(g.Template.Generals) {
+	for p, pos := range(g.Rules.BoardTemplate.Generals) {
 		b.tiles[pos].Entity = g.GetPlayer(p).General
 	}
 
