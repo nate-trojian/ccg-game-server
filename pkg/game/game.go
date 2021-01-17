@@ -24,6 +24,7 @@ type Game struct {
 	ID string
 	logger *zap.Logger
 	Rules Rules
+	Db Database
 	Player1 *Player
 	Player2 *Player
 	startTime int64
@@ -50,6 +51,11 @@ func NewGame(db Database, match matchmaking.Match, p1Chan, p2Chan chan []byte) (
 		return nil, fmt.Errorf("failed to decode player 1 deck - %w", err)
 	}
 
+	p1Deck, err := createDeckFromInfo(db, match.Player1, p1DeckInfo)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode player 1 deck - %w", err)
+	}
+
 	p2Info, err := db.PlayerInfoFromId(match.Player2)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get player 2 info - %w", err)
@@ -60,16 +66,22 @@ func NewGame(db Database, match matchmaking.Match, p1Chan, p2Chan chan []byte) (
 		return nil, fmt.Errorf("failed to decode player 2 deck - %w", err)
 	}
 
+	p2Deck, err := createDeckFromInfo(db, match.Player2, p2DeckInfo)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode player 2 deck - %w", err)
+	}
+
 	return &Game{
 		ID: id,
 		logger: logger,
+		Db: db,
 		Player1: &Player{
 			Info: p1Info,
-			Deck: createDeckFromInfo(p1DeckInfo),
+			Deck: p1Deck,
 		},
 		Player2: &Player{
 			Info: p2Info,
-			Deck: createDeckFromInfo(p2DeckInfo),
+			Deck: p2Deck,
 		},
 		Rules: getRulesFromMode(match.Mode),
 		ActionChan: make(chan Action, 10),
@@ -84,12 +96,39 @@ func getRulesFromMode(mode string) Rules {
 		MulligansAllowed: 4,
 		PlayerHandSize: 10,
 		MaximumMana: 10,
-		BoardTemplate: BoardTemplate{},
+		BoardTemplate: BoardTemplate{
+			Width: 9,
+			Height: 5,
+			Entities: nil,
+			TileEffects: map[int]*TileEffect{
+				4: {ID: "mana"},
+				23: {ID: "mana"},
+				41: {ID: "mana"},
+			},
+			Generals: map[int]int{
+				1: 19,
+				2: 25,
+			},
+		},
 	}
 }
 
-func createDeckFromInfo(info *DeckInfo) *Deck {
-	return nil
+func createDeckFromInfo(db Database, pID string, info *DeckInfo) (*Deck, error) {
+	deck := &Deck{
+		info,
+		[]*Card{},
+	}
+	for _,c := range(info.CardIds) {
+		cInfo, err := db.CardInfoFromId(c)
+		if err != nil {
+			return nil, err
+		}
+		deck.Cards = append(deck.Cards, &Card{
+			*cInfo,
+			pID,
+		})
+	}
+	return deck, nil
 }
 
 // GetPlayer - Get player by index
@@ -156,5 +195,4 @@ func (g *Game) loop() {
 }
 
 func (g *Game) processAction(a Action) {
-	
 }

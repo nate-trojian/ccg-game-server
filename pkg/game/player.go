@@ -8,7 +8,7 @@ type PlayerInfo struct {
 
 // Player - Game Player
 type Player struct {
-	Info PlayerInfo
+	Info *PlayerInfo
 	Deck *Deck
 	General *Entity
 	Mana int

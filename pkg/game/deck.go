@@ -48,7 +48,7 @@ type DeckInfo struct {
 }
 
 // Base64 - Base64 encoded string of the deck
-func (di DeckInfo) Base64() string {
+func (di *DeckInfo) Base64() string {
 	var buf bytes.Buffer
 	encoder := base64.NewEncoder(base64.StdEncoding, &buf)
 	// Ignore the potential error
@@ -69,9 +69,9 @@ func DecodeBase64(b64 string) (*DeckInfo, error) {
 	return &info, nil
 }
 
-// Deck - Deck of Cards for 
+// Deck - Deck of Cards for Game
 type Deck struct {
-	DeckInfo
+	Info *DeckInfo
 	Cards []*Card
 }
 

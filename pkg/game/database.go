@@ -2,6 +2,6 @@ package game
 
 // Database - Interface to interact with the database
 type Database interface {
-	PlayerInfoFromId(string) (PlayerInfo, error)
-	PlayerDeckFromIds(string, string) (DeckInfo, error)
+	PlayerInfoFromId(string) (*PlayerInfo, error)
+	CardInfoFromId(string) (*CardInfo, error)
 }
