@@ -21,19 +21,19 @@ type Rules struct {
 
 // Game - It's the Game
 type Game struct {
-	ID string
+	id string
 	logger *zap.Logger
-	Rules Rules
-	Db Database
-	Player1 *Player
-	Player2 *Player
+	rules Rules
+	db Database
+	player1 *Player
+	player2 *Player
 	startTime int64
-	Turn int
-	ActionChan chan Action
-	Player1OutChan chan []byte
-	Player2OutChan chan []byte
-	Board *Board
-	Hooks []Hook
+	turn int
+	actionChan chan Action
+	player1OutChan chan []byte
+	player2OutChan chan []byte
+	board *Board
+	hooks []Hook
 }
 
 // NewGame creates a new Game
@@ -72,21 +72,21 @@ func NewGame(db Database, match matchmaking.Match, p1Chan, p2Chan chan []byte) (
 	}
 
 	return &Game{
-		ID: id,
+		id: id,
 		logger: logger,
-		Db: db,
-		Player1: &Player{
+		db: db,
+		player1: &Player{
 			Info: p1Info,
 			Deck: p1Deck,
 		},
-		Player2: &Player{
+		player2: &Player{
 			Info: p2Info,
 			Deck: p2Deck,
 		},
-		Rules: getRulesFromMode(match.Mode),
-		ActionChan: make(chan Action, 10),
-		Player1OutChan: p1Chan,
-		Player2OutChan: p2Chan,
+		rules: getRulesFromMode(match.Mode),
+		actionChan: make(chan Action, 10),
+		player1OutChan: p1Chan,
+		player2OutChan: p2Chan,
 	}, nil
 }
 
@@ -124,8 +124,8 @@ func createDeckFromInfo(db Database, pID string, info *DeckInfo) (*Deck, error) 
 			return nil, err
 		}
 		deck.Cards = append(deck.Cards, &Card{
-			*cInfo,
-			pID,
+			Info: cInfo,
+			OwnedBy: pID,
 		})
 	}
 	return deck, nil
@@ -134,8 +134,8 @@ func createDeckFromInfo(db Database, pID string, info *DeckInfo) (*Deck, error) 
 // GetPlayer - Get player by index
 func (g *Game) GetPlayer(n int) *Player {
 	switch n {
-	case 1: return g.Player1
-	case 2: return g.Player2
+	case 1: return g.player1
+	case 2: return g.player2
 	default: return nil
 	}
 }
@@ -143,8 +143,8 @@ func (g *Game) GetPlayer(n int) *Player {
 // GetPlayerFromID - Get player with id
 func (g *Game) GetPlayerFromID(id string) *Player {
 	switch id {
-	case g.Player1.Info.ID: return g.Player1
-	case g.Player2.Info.ID: return g.Player2
+	case g.player1.Info.ID: return g.player1
+	case g.player2.Info.ID: return g.player2
 	default: return nil
 	}
 }
@@ -152,10 +152,10 @@ func (g *Game) GetPlayerFromID(id string) *Player {
 // Start Game process
 func (g *Game) Start() {
 	g.startTime = time.Now().Unix()
-	g.Turn = 0
+	g.turn = 0
 	g.initializeBoard()
-	g.Player1.Deck.Shuffle()
-	g.Player2.Deck.Shuffle()
+	g.player1.Deck.Shuffle()
+	g.player2.Deck.Shuffle()
 }
 
 func (g *Game) initializeBoard() {
@@ -164,30 +164,30 @@ func (g *Game) initializeBoard() {
 	)
 
 	b := &Board{
-		width: g.Rules.BoardTemplate.Width,
-		height: g.Rules.BoardTemplate.Height,
-		tiles: make([]Tile, g.Rules.BoardTemplate.Width * g.Rules.BoardTemplate.Height),
+		width: g.rules.BoardTemplate.Width,
+		height: g.rules.BoardTemplate.Height,
+		tiles: make([]Tile, g.rules.BoardTemplate.Size()),
 	}
 
 	for i := 0; i < b.height; i++ {
 		for j := 0; j < b.width; j++ {
 			ind = j + i * b.width
 			b.tiles[ind] = Tile{
-				Entity: g.Rules.BoardTemplate.Entities[ind],
-				TileEffect: g.Rules.BoardTemplate.TileEffects[ind],
+				Entity: g.rules.BoardTemplate.Entities[ind],
+				TileEffect: g.rules.BoardTemplate.TileEffects[ind],
 			}
 		}
 	}
 
-	for p, pos := range(g.Rules.BoardTemplate.Generals) {
+	for p, pos := range(g.rules.BoardTemplate.Generals) {
 		b.tiles[pos].Entity = g.GetPlayer(p).General
 	}
 
-	g.Board = b
+	g.board = b
 }
 
 func (g *Game) mulligan() {
-	for i := 0; i < g.Rules.MulliganHandSize; i++ {
+	for i := 0; i < g.rules.MulliganHandSize; i++ {
 	}
 }
 

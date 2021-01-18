@@ -36,3 +36,8 @@ type BoardTemplate struct {
 	TileEffects map[int]*TileEffect
 	Generals map[int]int  // Player Num -> Tile Pos
 }
+
+// Size - Total size of Board
+func (bt BoardTemplate) Size() int {
+	return bt.Width * bt.Height
+}

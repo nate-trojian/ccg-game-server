@@ -30,7 +30,7 @@ type CardInfo struct {
 
 // Card - A playable card in the Game
 type Card struct {
-	CardInfo
+	Info *CardInfo
 	OwnedBy string
 }
 
@@ -106,13 +106,14 @@ func (d *Deck) Replace(c *Card) *Card {
 	r := rand.Intn(len(d.Cards))
 
 	// Cycle through whole deck
+	// If no valid replace, use the original random position chosen
 	for i := 0; i < len(d.Cards); i++ {
 		// Get usable index
 		j = (r+i) % len(d.Cards)
 		// Save card
 		cr = d.Cards[j]
 		// If its a valid replace, exit loop
-		if cr.ID != c.ID {
+		if cr.Info.ID != c.Info.ID {
 			break
 		}
 	}
